@@ -7,5 +7,21 @@ import { defineAuth } from '@aws-amplify/backend';
 export const auth = defineAuth({
   loginWith: {
     email: true,
+    externalProviders: {
+      facebook: {
+        clientId: secret('FACEBOOK_CLIENT_ID'),
+        clientSecret: secret('FACEBOOK_CLIENT_SECRET')
+      },
+      callbackUrls: [
+        'http://localhost:3000/profile',
+        'https://veteransgaragenetwork.com/profile',
+        'https://veterangaragenetwork.com/profile'
+      ],
+      logoutUrls: [
+        'http://localhost:3000',
+        'https://veteransgaragenetwork.com',
+        'https://veterangaragenetwork.com'
+      ],
+    }
   },
 });

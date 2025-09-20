@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { a, defineData, type ClientSchema } from '@aws-amplify/backend';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,11 +7,50 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
+  // Address - The location of something.
+  Address: a.customType({
+    street: a.string(),
+    city: a.string().required(),
+    state: a.string().required(),
+    zip: a.string().required()
+  }),
+
+  Location: a.customType({
+      lat: a.float().required(),
+      long: a.float().required(),
+  }),
+
+  Contact: a.customType({
+    name: a.string().required(),
+    email: a.email(),
+    phone: a.phone().required(),
+    preference: a.enum(['CALL', 'TEXT', 'EAMIL', 'ANY']) 
+  }),
+
+  // // Garage - Provides space for veterans to work on their bikes
+  Garage: a.model({
+    id: a.id(),
+    name: a.string().required(),
+    address: a.ref('Address'),
+    contact: a.ref('Contact'),
+    description: a.string(),
+    hoursOfOperation: a.string(), // e.g., "Mon-Fri: 9am-5pm"
+  }),
+  
+  // // Club - A group of people that support each other
+  Club: a.model({
+    id: a.id(),
+    name: a.string().required(),
+    address: a.ref('Address'), // Clubs may not have a fixed physical location
+    contact: a.ref('Contact'),
+    description: a.string(),
+    affiliatedGarages: a.ref('Garage').array()
+  }),
+
+  // Ride - The plan for what roads to take during a ride
+  // Event - An event hosted by a club at a location (Can include a ride)
+  // Project - A bike that is being built/repaired for/by a veteran
+  // Part - A bike part that a club/garage has for veteran projects
 });
 
 export type Schema = ClientSchema<typeof schema>;
