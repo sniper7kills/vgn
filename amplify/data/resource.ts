@@ -22,8 +22,16 @@ const schema = a.schema({
 
   Contact: a.customType({
     name: a.string().required(),
-    email: a.email(),
-    phone: a.phone().required(),
+    // Restrict email to authenticated users only.
+    email: a.email()
+      .authorization(
+        allow => [allow.authenticated(),]
+      ),
+    // Restrict phone to authenticated users only.
+    phone: a.phone().required()
+      .authorization(
+        allow => [allow.authenticated(),]
+      ),
     preference: a.enum(['CALL', 'TEXT', 'EAMIL', 'ANY']) 
   }),
 
@@ -35,7 +43,12 @@ const schema = a.schema({
     contact: a.ref('Contact'),
     description: a.string(),
     hoursOfOperation: a.string(), // e.g., "Mon-Fri: 9am-5pm"
-  }),
+  }).authorization(
+    allow => [
+      // Allow anyone auth'd with an API key to read everyone's posts.
+      allow.publicApiKey().to(['read']),
+    ]
+  ),
   
   // // Club - A group of people that support each other
   Club: a.model({
@@ -45,7 +58,12 @@ const schema = a.schema({
     contact: a.ref('Contact'),
     description: a.string(),
     affiliatedGarages: a.ref('Garage').array()
-  }),
+  }).authorization(
+    allow => [
+      // Allow anyone auth'd with an API key to read everyone's posts.
+      allow.publicApiKey().to(['read']),
+    ]
+  ),
 
   // Ride - The plan for what roads to take during a ride
   // Event - An event hosted by a club at a location (Can include a ride)
