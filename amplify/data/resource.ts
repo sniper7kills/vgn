@@ -12,7 +12,7 @@ const schema = a.schema({
   Location: a.customType({
     title: a.string(),
     description: a.string(),
-    stop: a.boolean().default(false),
+    stop: a.boolean(),
     lat: a.float().required(),
     long: a.float().required(),
   }),
