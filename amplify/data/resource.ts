@@ -7,21 +7,29 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
+
+  // Location - The GPS location for putting on a map.
+  Location: a.customType({
+    title: a.string(),
+    description: a.string(),
+    stop: a.boolean().default(false),
+    lat: a.float().required(),
+    long: a.float().required(),
+  }),
+
   // Address - The location of something.
   Address: a.customType({
     street: a.string(),
     city: a.string().required(),
     state: a.string().required(),
-    zip: a.string().required()
+    zip: a.string().required(),
+    location: a.ref('Location')
   }),
 
-  Location: a.customType({
-      lat: a.float().required(),
-      long: a.float().required(),
-  }),
-
+  // Contact - The method for getting in touch with a garage or club.
   Contact: a.customType({
     name: a.string().required(),
+    title: a.string(),
     // Restrict email to authenticated users only.
     email: a.email()
       .authorization(
@@ -35,38 +43,65 @@ const schema = a.schema({
     preference: a.enum(['CALL', 'TEXT', 'EAMIL', 'ANY']) 
   }),
 
-  // // Garage - Provides space for veterans to work on their bikes
+  // Garage - Provides space, tools, resources to veterans.
   Garage: a.model({
     id: a.id(),
     name: a.string().required(),
     address: a.ref('Address'),
-    contact: a.ref('Contact'),
+    contacts: a.ref('Contact').array(),
     description: a.string(),
     hoursOfOperation: a.string(), // e.g., "Mon-Fri: 9am-5pm"
   }).authorization(
     allow => [
-      // Allow anyone auth'd with an API key to read everyone's posts.
+      // Allow anyone auth'd with an API key to read
       allow.publicApiKey().to(['read']),
     ]
   ),
   
-  // // Club - A group of people that support each other
+  // Club - A group of people that support each other.
   Club: a.model({
     id: a.id(),
     name: a.string().required(),
+    website: a.url(),
     address: a.ref('Address'), // Clubs may not have a fixed physical location
-    contact: a.ref('Contact'),
-    description: a.string(),
-    affiliatedGarages: a.ref('Garage').array()
+    contacts: a.ref('Contact').array(),
+    description: a.string().required(),
   }).authorization(
     allow => [
-      // Allow anyone auth'd with an API key to read everyone's posts.
+      // Allow anyone auth'd with an API key to read
       allow.publicApiKey().to(['read']),
     ]
   ),
 
   // Ride - The plan for what roads to take during a ride
+  Ride: a.model({
+    id: a.id(),
+    name: a.string(),
+    description: a.string(),
+    start: a.ref('Address'),
+    end: a.ref('Address'),
+    points: a.ref('Location').array(),
+    // Relations
+    events: a.belongsTo('Event', 'id')
+  }).authorization(
+    allow => [
+      allow.publicApiKey().to(['read']),
+    ]
+  ),
   // Event - An event hosted by a club at a location (Can include a ride)
+  Event: a.model({
+    id: a.id(),
+    address: a.ref('Address'),
+    title: a.string().required(),
+    description: a.string(),
+    website: a.string(),
+    // Relations
+    ride: a.hasOne('Ride', 'id'),
+  }).authorization(
+    allow => [
+      allow.publicApiKey().to(['read'])
+    ]
+  )
   // Project - A bike that is being built/repaired for/by a veteran
   // Part - A bike part that a club/garage has for veteran projects
 });
