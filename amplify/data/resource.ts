@@ -24,7 +24,7 @@ const schema = a.schema({
     city: a.string().required(),
     state: a.string().required(),
     zip: a.string().required(),
-    country: a.string().default('USA'),
+    country: a.string(),
     location: a.ref('Location')
   }),
 
